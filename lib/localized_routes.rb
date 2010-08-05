@@ -10,7 +10,7 @@ module LocalizedRoutes
         if locale != :en
           # Translate the static chunks of the route
           chunks = path.split(/[\/\(\)]/).reject {|c| c == "" or c =~ /[:\.]/ }
-          chunks.each { |c| path = path.gsub("/#{c}", "/" + I18n.translate("routes.#{c}", :locale=>locale)) }
+          chunks.sort_by{|c| -c.size}.each { |c| path = path.gsub("/#{c}", "/" + I18n.translate("routes.#{c}", :locale=>locale)) }
         end
         path = "" if path == "/"
         path = "/#{locale}#{path}"
