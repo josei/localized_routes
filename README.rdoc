@@ -1,0 +1,38 @@
+= localized_routes
+
+localized_routes is a plugin for Ruby on Rails 3 that makes translating URLs dead simple.
+
+Just install the plugin and add some route translations. Then you're ready to go:
+* URLs have the form /{locale}/..., such as /en/..., /es/...
+* Locale is obtained from the URL as a filter before processing controllers.
+* When building URLs, the current locale is automatically added, so the usage is transparent.
+
+For example, let an app have the following routes:
+
+/
+/events
+/events/:id/comments
+
+After installing the plugin, the routes can be translated like this:
+
+es:
+  routes:
+    events: eventos
+    comments: comentarios
+
+Then, the following routes will be available:
+/ (will show home page with default locale)
+/en
+/es
+/en/events
+/es/eventos
+/en/events/:id/comments
+/es/eventos/:id/comentarios
+
+(it is not necessary to add route translations to "en" locale)
+
+Helper methods such as events_path or event_comments_path still exist, along with events_es_path, event_comments_es_path, events_en_path, and event_comments_en_path. Therefore, the usage is totally transparent.
+
+Works with Rails 3. Inspired in i18n_routing and translate_routes plugins.
+
+Copyright (c) 2010 José Ignacio Fernández (joseignacio.fernandez <at> gmail.com). Released under the MIT license.
