@@ -9,25 +9,26 @@ Just install the plugin and add some route translations. Then you're ready to go
 
 For example, let an app have the following routes:
 
-/
-/events
-/events/:id/comments
+  /
+  /events
+  /events/:id/comments
 
 After installing the plugin, the routes can be translated like this:
 
-es:
-  routes:
-    events: eventos
-    comments: comentarios
+  es:
+    routes:
+      events: eventos
+      comments: comentarios
 
 Then, the following routes will be available:
-/ (will show home page with default locale)
-/en
-/es
-/en/events
-/es/eventos
-/en/events/:id/comments
-/es/eventos/:id/comentarios
+
+  / (will show home page with default locale)
+  /en
+  /es
+  /en/events
+  /es/eventos
+  /en/events/:id/comments
+  /es/eventos/:id/comentarios
 
 (it is not necessary to add route translations to "en" locale)
 
