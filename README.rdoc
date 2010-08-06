@@ -30,8 +30,6 @@ Then, the following routes will be available:
   /en/events/:id/comments
   /es/eventos/:id/comentarios
 
-(it is not necessary to add route translations to "en" locale)
-
 Helper methods such as events_path or event_comments_path still exist, along with events_es_path, event_comments_es_path, events_en_path, and event_comments_en_path. Therefore, the usage is totally transparent.
 
 Works with Rails 3. Inspired in i18n_routing and translate_routes plugins.
