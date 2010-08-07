@@ -7,15 +7,14 @@ module LocalizedRoutes
       # Create route for each locale
       I18n.available_locales.each do |locale|
         path = conditions[:path_info]
-        if locale != :en
-          # Translate the static chunks of the route
-          chunks = path.split(/[\/\(\)]/).reject {|c| c == "" or c =~ /[:\.]/ }
-          chunks.sort_by{|c| -c.size}.each { |c| path = path.gsub("/#{c}", "/" + I18n.translate("routes.#{c}", :locale=>locale, :default=>c)) }
-        end
-        path = "" if path == "/"
-        path = "/#{locale}#{path}"
+
+        # Translate the static chunks of the route
+        chunks = path.split(/[\/\(\)]/).reject {|c| c == "" or c =~ /[:\.]/ }
+        chunks.sort_by{|c| -c.size}.each { |c| path = path.gsub("/#{c}", "/" + I18n.translate("routes.#{c}", :locale=>locale, :default=>c)) }
         
-        add_route_without_i18n(app, conditions.merge(:path_info=>path), requirements, defaults, "#{name}_#{locale}", anchor)
+        new_path = "/:locale#{path=='/' ? '' : path}"
+        
+        add_route_without_i18n(app, conditions.merge(:path_info=>new_path), requirements, defaults, "#{name}_#{locale}", anchor)
       end
       add_route_without_i18n(app, conditions, requirements, defaults, nil, anchor) if conditions[:path_info] == '/'
       
@@ -36,26 +35,28 @@ module LocalizedRoutes
       DEF_NEW_HELPER
 
       [ActionController::Base, ActionView::Base, ActionMailer::Base, ActionDispatch::Integration::Session].each { |d| d.module_eval(def_new_helper) }
-      ActionController::Routing::Routes.named_routes.helpers << new_helper_name.to_sym
+      Rails.application.routes.named_routes.helpers << new_helper_name.to_sym
     end
   end
   
-  module Controller  
-    def set_locale
-      I18n.locale = params[:locale] || I18n.default_locale
+  module Controller
+    def self.included base
+      base.class_eval { before_filter :get_locale }
     end
-
+    
+    def get_locale
+      I18n.locale = params[:locale] || I18n.default_locale
+      raise ActionController::RoutingError, 'Invalid locale' unless I18n.available_locales.include?(I18n.locale)
+    end
+    
     def default_url_options(options={})
       {:locale => I18n.locale}
     end
   end
 end
 
-ActionDispatch::Routing::RouteSet.send  :include, LocalizedRoutes
+ActionDispatch::Routing::RouteSet.send :include, LocalizedRoutes
 ActionDispatch::Routing::RouteSet.send :alias_method_chain, :add_route, :i18n
-
-ApplicationController.send :include, LocalizedRoutes::Controller
-ApplicationController.send :before_filter, :set_locale
 
 if defined?(Rails) and Rails.respond_to?(:root) and Rails.root
   I18n.load_path = (I18n.load_path << Dir[Rails.root.join('config', 'locales', '*.yml').to_s]).flatten.uniq
