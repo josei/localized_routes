@@ -4,6 +4,9 @@ module LocalizedRoutes
       # Ignore this special case
       add_route_without_i18n(app, conditions, requirements, defaults, name, anchor)
     else
+      # Allow setting locale as default route parameter
+      valid_conditions.push :locale unless valid_conditions.include?(:locale)
+      
       # Create route for each locale
       I18n.available_locales.each do |locale|
         path = conditions[:path_info]
@@ -12,9 +15,9 @@ module LocalizedRoutes
         chunks = path.split(/[\/\(\)]/).reject {|c| c == "" or c =~ /[:\.]/ }
         chunks.sort_by{|c| -c.size}.each { |c| path = path.gsub("/#{c}", "/" + I18n.translate("routes.#{c}", :locale=>locale, :default=>c)) }
         
-        new_path = "/:locale#{path=='/' ? '' : path}"
-        
-        add_route_without_i18n(app, conditions.merge(:path_info=>new_path), requirements.merge(:locale=>locale.to_s), defaults, "#{name}_#{locale}", anchor)
+        new_path = "/#{locale}#{path=='/' ? '' : path}"
+
+        add_route_without_i18n(app, conditions.merge(:path_info=>new_path), requirements, defaults.merge(:locale=>locale.to_s), "#{name}_#{locale}", anchor)
       end
       add_route_without_i18n(app, conditions, requirements, defaults, nil, anchor) if conditions[:path_info] == '/'
       
@@ -45,14 +48,15 @@ module LocalizedRoutes
     end
     
     def get_locale
-      I18n.locale = params[:locale] || I18n.default_locale      
+      # Get locale from the params, obtained from the path
+      I18n.locale = params[:locale] || I18n.default_locale
 
       # Next is an educated guess - emails should have recipient's locale
       ActionMailer::Base.default_url_options[:locale] = I18n.locale
     end
     
     def default_url_options
-      {:locale => I18n.locale}
+      {:locale => I18n.locale.to_s}
     end
   end
 end
