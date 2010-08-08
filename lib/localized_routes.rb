@@ -14,7 +14,7 @@ module LocalizedRoutes
         
         new_path = "/:locale#{path=='/' ? '' : path}"
         
-        add_route_without_i18n(app, conditions.merge(:path_info=>new_path), requirements, defaults, "#{name}_#{locale}", anchor)
+        add_route_without_i18n(app, conditions.merge(:path_info=>new_path), requirements.merge(:locale=>locale.to_s), defaults, "#{name}_#{locale}", anchor)
       end
       add_route_without_i18n(app, conditions, requirements, defaults, nil, anchor) if conditions[:path_info] == '/'
       
@@ -34,7 +34,7 @@ module LocalizedRoutes
         end
       DEF_NEW_HELPER
 
-      [ActionController::Base, ActionView::Base, ActionMailer::Base, ActionDispatch::Integration::Session].each { |d| d.module_eval(def_new_helper) }
+      ActionDispatch::Routing::UrlFor.module_eval(def_new_helper)
       Rails.application.routes.named_routes.helpers << new_helper_name.to_sym
     end
   end
@@ -45,11 +45,13 @@ module LocalizedRoutes
     end
     
     def get_locale
-      I18n.locale = params[:locale] || I18n.default_locale
-      raise ActionController::RoutingError, 'Invalid locale' unless I18n.available_locales.include?(I18n.locale)
+      I18n.locale = params[:locale] || I18n.default_locale      
+
+      # Next is an educated guess - emails should have recipient's locale
+      ActionMailer::Base.default_url_options[:locale] = I18n.locale
     end
     
-    def default_url_options(options={})
+    def default_url_options
       {:locale => I18n.locale}
     end
   end
