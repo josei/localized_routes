@@ -13,11 +13,7 @@ For example, let an app have the following routes:
   /events
   /events/:id/comments
 
-After installing the plugin, add this line to app/controllers/application_controller.rb:
-  
-  include LocalizedRoutes::Controller
-
-The routes can be translated in your locale files like this:
+After installing the plugin, the routes can be translated in your locale files like this:
 
   es:
     routes:
