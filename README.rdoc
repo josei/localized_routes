@@ -32,6 +32,12 @@ Then, the following routes will be available:
 
 Helper methods such as events_path or event_comments_path still exist, along with events_es_path, event_comments_es_path, events_en_path, and event_comments_en_path. Therefore, the usage is totally transparent.
 
+Routes can be marked as non-i18n-able. E.g.:
+
+  match '/captcha/:id', :to => 'captcha#show', :as => :captcha, :i18n=>false
+
+This will prevent creating different routes with the available locales.
+
 Works with Rails 3. Inspired in i18n_routing and translate_routes plugins.
 
 Copyright (c) 2010 José Ignacio Fernández (joseignacio.fernandez <at> gmail.com). Released under the MIT license.

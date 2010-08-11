@@ -1,8 +1,8 @@
 module LocalizedRoutes
   module Routing
     def add_route_with_i18n(app, conditions = {}, requirements = {}, defaults = {}, name = nil, anchor = true)
-      if defaults[:controller] == "rails/info"
-        # Ignore this special case
+      if defaults[:controller] == "rails/info" or defaults[:i18n]==false
+        # Ignore localization
         add_route_without_i18n(app, conditions, requirements, defaults, name, anchor)
       else
         # Allow setting locale as default route parameter
