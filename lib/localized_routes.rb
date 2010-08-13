@@ -69,7 +69,7 @@ module LocalizedRoutes
     
     def process_with_default_locale(action, parameters = nil, session = nil, flash = nil, http_method = 'GET')
       parameters = {:locale=>I18n.locale.to_s}.merge(parameters||{})
-      process_without_default_locale(action, parameters, session = nil, flash = nil, http_method = 'GET')
+      process_without_default_locale(action, parameters, session = nil, flash = nil, http_method)
     end
   end
 end
