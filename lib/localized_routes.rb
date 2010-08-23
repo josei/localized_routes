@@ -20,10 +20,14 @@ module LocalizedRoutes
 
           add_route_without_i18n(app, conditions.merge(:path_info=>new_path), requirements, defaults.merge(:locale=>locale.to_s), "#{name}_#{locale}", anchor)
         end
-        add_route_without_i18n(app, conditions, requirements, defaults, nil, anchor) if conditions[:path_info] == '/'
       
         # Add helpers such as posts_path, that use posts_es_path, posts_en_path, ...
-        add_helper_path name
+        if conditions[:path_info] == '/'
+          add_route_without_i18n(app, conditions, requirements, defaults, nil, anchor)
+          add_root_helper_path name
+        else
+          add_helper_path name
+        end
       end
     end
   
@@ -35,6 +39,25 @@ module LocalizedRoutes
         def_new_helper = <<-DEF_NEW_HELPER
           def #{new_helper_name}(*args)
             send("#{old_name}_\#{I18n.locale.to_s.underscore}_#{suffix}", *args)
+          end
+        DEF_NEW_HELPER
+
+        ActionDispatch::Routing::UrlFor.module_eval(def_new_helper)
+        Rails.application.routes.named_routes.helpers << new_helper_name.to_sym
+      end
+    end
+
+    def add_root_helper_path old_name
+      # Taken from translate_routes
+      ['path', 'url'].each do |suffix|
+        new_helper_name = "#{old_name}_#{suffix}"
+        def_new_helper = <<-DEF_NEW_HELPER
+          def #{new_helper_name}(args={})
+            result = send("#{old_name}_\#{I18n.locale.to_s.underscore}_#{suffix}", args.reject{|k,v| k.to_s=='locale'})
+            if args.include?(:locale) and args[:locale].nil?
+              result = result.split('/')[0..2] * '/' +  '/'
+            end
+            result
           end
         DEF_NEW_HELPER
 
