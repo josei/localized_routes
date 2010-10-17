@@ -16,13 +16,13 @@ module LocalizedRoutes
           chunks = path.split(/[\/\(\)]/).reject {|c| c == "" or c =~ /[:\.]/ }
           chunks.sort_by{|c| -c.size}.each { |c| path = path.gsub("/#{c}", "/" + I18n.translate("routes.#{c}", :locale=>locale, :default=>c)) }
         
-          new_path = "/#{locale}#{path=='/' ? '' : path}"
+          new_path = "/#{locale}#{is_root?(path) ? '' : path}"
 
           add_route_without_i18n(app, conditions.merge(:path_info=>new_path), requirements, defaults.merge(:locale=>locale.to_s), "#{name}_#{locale}", anchor)
         end
       
         # Add helpers such as posts_path, that use posts_es_path, posts_en_path, ...
-        if conditions[:path_info] == '/'
+        if is_root? conditions[:path_info]
           add_route_without_i18n(app, conditions, requirements, defaults, nil, anchor)
           add_root_helper_path name
         else
@@ -32,6 +32,10 @@ module LocalizedRoutes
     end
   
     private
+    def is_root? path
+      ['/', '/(.:format)'].include? path
+    end
+    
     def add_helper_path old_name
       # Taken from translate_routes
       ['path', 'url'].each do |suffix|
